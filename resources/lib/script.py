@@ -146,8 +146,7 @@ def select_line_subtitle(subtitlefile, start, end):
 
 def verify_timestring(timestring):
     try:
-        h, m, se, ms = int(timestring[:2]), int(timestring[3:5]),
-                       int(timestring[6:8]), int(timestring[9:12])
+        h, m, se, ms = int(timestring[:2]), int(timestring[3:5]), int(timestring[6:8]), int(timestring[9:12])
         return True
     except:
         return False
