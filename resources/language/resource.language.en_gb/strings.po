@@ -194,6 +194,10 @@ msgctxt "#32032"
 msgid "Line:"
 msgstr ""
 
+msgctxt "#33032"
+msgid "Line "
+msgstr ""
+
 msgctxt "#32033"
 msgid "Possible problems: "
 msgstr ""
