@@ -317,10 +317,7 @@ def exiting(subtitlefile=[], filename=""):
                                       nolabel=_(32048), yeslabel=_(32049))
         if ret:
             save_the_file(subtitlefile, filename)
-        else:
-            sys.exit()
-    else:
-        sys.exit()
+    sys.exit()
 
 def stretch_subtitle(subtitlefile, filename):
     #Write new timestamp, for example
@@ -376,7 +373,8 @@ def retrieve_video(subtitlefile, filename):
 
 def sync_with_video(subtitlefile, filename):
     #Name, long desc, Ok, More Info
-    resp = xbmcgui.Dialog().yesno(_(31001), _(32060), yeslabel=_(32012), nolabel=_(32013))
+    resp = xbmcgui.Dialog().yesno(_(31001), _(32060),
+                                   yeslabel=_(32012), nolabel=_(32013))
     if not resp:
         # How to, long desc.
         xbmcgui.Dialog().textviewer(_(32061), _(32062))
@@ -388,28 +386,44 @@ def sync_with_video(subtitlefile, filename):
     while xbmcPlayer.isPlaying():
         xbmc.sleep(500)
 
-def show_dialog(subtitlefile="", filename=""):
+def check_integrity_menu(subtitlefile, filename):
+    subtitlefile, problems = check_integrity(subtitlefile)
+    if not problems:
+        xbmcgui.Dialog().ok(_(32030), _(32031))
+    else:
+        report = []
+        for x in problems:
+            report += _(32032) + str(x) + " --> " + subtitlefile[int(x)]
+        report = "".join(report)
+        xbmcgui.Dialog().ok(_(32033), report)
+    show_dialog(subtitlefile, filename)
+
+def load_subtitle():
     global backupfile
+    #Sublissimo, select sub, select sub
+    xbmcgui.Dialog().ok(_(31001), _(32034))
+    filename = xbmcgui.Dialog().browse(1, _(32035), 'video')
+    if filename == "":
+        sys.exit()
+    if filename[-3:] != 'srt':
+        # Error, only .srt files
+        xbmcgui.Dialog().ok(_(32014), _(32026))
+        sys.exit()
+    try:
+        f = xbmcvfs.File(filename)
+        b = f.read().split("\n")
+        subtitlefile = [sentence+"\n" for sentence in b]
+        backupfile = copy.deepcopy(subtitlefile)
+        return subtitlefile, filename
+    except:
+        # Error, file not found
+        xbmcgui.Dialog().ok(_(32014), _(32027) + filename)
+        sys.exit()
+
+def show_dialog(subtitlefile="", filename=""):
     addon_name = ADDON.getAddonInfo('name')
     if not subtitlefile:
-        #Sublissimo, select sub, select sub
-        xbmcgui.Dialog().ok(_(31001), _(32034))
-        filename = xbmcgui.Dialog().browse(1, _(32035), 'video')
-        if filename == "":
-            sys.exit()
-        if filename[-3:] != 'srt':
-            # Error, only .srt files
-            xbmcgui.Dialog().ok(_(32014), _(32026))
-            sys.exit()
-        try:
-            f = xbmcvfs.File(filename)
-            b = f.read().split("\n")
-            subtitlefile = [sentence+"\n" for sentence in b]
-            backupfile = copy.deepcopy(subtitlefile)
-        except:
-            # Error, file not found
-            xbmcgui.Dialog().ok(_(32014), _(32027) + filename)
-            sys.exit()
+        subtitlefile, filename = load_subtitle()
     #Scroll, edit, move, stretch, syncwsub syncwvideo, search, check, save, quit
     options = [ _(31000), _(30001), _(31002), _(31003), _(31004), _(31005),
                 _(31006), _(31007), _(31008), _(31009)]
@@ -426,22 +440,13 @@ def show_dialog(subtitlefile="", filename=""):
     if menuchoice == 4:
         subtitlefile = synchronize_with_other_subtitle(subtitlefile, filename)
         show_dialog(subtitlefile, filename)
+    if menuchoice == 5:
+        sync_with_video(subtitlefile, filename)
     if menuchoice == 6:
         search_subtitles(subtitlefile, filename)
     if menuchoice == 7:
-        subtitlefile, problems = check_integrity(subtitlefile)
-        if not problems:
-            xbmcgui.Dialog().ok(_(32030), _(32031))
-        else:
-            report = []
-            for x in problems:
-                report += _(32032) + str(x) + " --> " + subtitlefile[int(x)]
-            report = "".join(report)
-            xbmcgui.Dialog().ok(_(32033), report)
-        show_dialog(subtitlefile, filename)
+        check_integrity_menu(subtitlefile, filename)
     if menuchoice == 8:
         save_the_file(subtitlefile, filename)
     if menuchoice == 9 or menuchoice == -1 :
         exiting(subtitlefile, filename)
-    if menuchoice == 5:
-        sync_with_video(subtitlefile, filename)
