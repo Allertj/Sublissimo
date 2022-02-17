@@ -1,6 +1,7 @@
 *.pyc
 *.pyo
 .DS*
+test_*
 .pylint_rc
 /.idea
 /.project
